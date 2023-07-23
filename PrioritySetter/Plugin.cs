@@ -2,6 +2,7 @@
 using IPA.Config;
 using IPA.Config.Stores;
 using System.Diagnostics;
+using System.Threading;
 using UnityEngine;
 using IPALogger = IPA.Logging.Logger;
 
@@ -14,6 +15,7 @@ namespace PrioritySetter
         private readonly Process ThisProcess;
         private readonly IPALogger Logger;
         private readonly PrioritySetterConfig Config;
+        private readonly Timer RefreshTimer;
 
         [Init]
         public Plugin(IPALogger logger, Config config)
@@ -22,18 +24,27 @@ namespace PrioritySetter
             ThisProcess = Process.GetCurrentProcess();
             Logger = logger;
 
-            SetPriority();
+            SetPriority(null);
 
             Config.OnChanged += Config_OnChanged;
+
+            // Start with 10 seconds left, then 120 seconds (or two minutes) between checks
+            RefreshTimer = new Timer(SetPriority, null, 10000, 120000);
+        }
+
+        [OnExit] 
+        public void OnExit()
+        {
+            RefreshTimer.Dispose();
         }
 
         private void Config_OnChanged()
         {
             Logger.Info("Config changed! Updating process priority.");
-            SetPriority();
+            SetPriority(null);
         }
 
-        internal void SetPriority()
+        private void SetPriority(object state)
         {
             ProcessPriorityClass ppc;
 
@@ -62,8 +73,17 @@ namespace PrioritySetter
                     break;
             }
 
+#if DEBUG
+            Logger.Notice($"Cheking priority. Set: {ThisProcess.PriorityClass}, Desired: {Config.ProcessPriority}, Desired converted: {ppc}");
+#endif
+
+            if (ThisProcess.PriorityClass == ppc) return;
+
+            Logger.Info($"Priority no longer at desired level. Refreshing!");
+
             ThisProcess.PriorityClass = ppc;
-            Logger.Info($"Set priority to {ppc}");
+
+            Logger.Info($"Set priority to {ThisProcess.PriorityClass}");
         }
     }
 }
