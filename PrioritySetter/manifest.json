@@ -1,7 +1,7 @@
 ﻿{
   "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
-  "id": "PrioritySetter",
-  "name": "PrioritySetter",
+  "id": "PrioritySetter-Light",
+  "name": "PrioritySetter-Light",
   "author": "Arimodu",
   "version": "1.1.0",
   "description": "The PrioritySetter mod for Beat Saber allows you to automatically adjust the priority of the game process to optimize performance",
