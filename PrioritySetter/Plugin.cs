@@ -29,7 +29,7 @@ namespace PrioritySetter
 
         private void SetPriority(object state)
         {
-            // Process obejct does not update, have to refresh manually
+            // Process object does not update, have to refresh manually
             var thisProcess = Process.GetCurrentProcess();
 
 #if DEBUG
