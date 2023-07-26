@@ -20,8 +20,8 @@ namespace PrioritySetter
         {
             Logger = logger;
 
-            // Start with 10 seconds left, then 120 seconds (or two minutes) between checks
-            RefreshTimer = new Timer(SetPriority, null, 10000, 120000);
+            // Start with 10 seconds left, then 60 seconds (or one minute) between checks
+            RefreshTimer = new Timer(SetPriority, null, 10000, 60000);
         }
 
         [OnExit] 
