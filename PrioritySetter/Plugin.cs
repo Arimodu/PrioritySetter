@@ -1,6 +1,7 @@
 ﻿using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
 using System.Diagnostics;
 using System.Threading;
 using UnityEngine;
@@ -12,7 +13,6 @@ namespace PrioritySetter
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
-        private readonly Process ThisProcess;
         private readonly IPALogger Logger;
         private readonly PrioritySetterConfig Config;
         private readonly Timer RefreshTimer;
@@ -21,15 +21,12 @@ namespace PrioritySetter
         public Plugin(IPALogger logger, Config config)
         {
             Config = config.Generated<PrioritySetterConfig>();
-            ThisProcess = Process.GetCurrentProcess();
             Logger = logger;
 
             SetPriority(null);
 
-            Config.OnChanged += Config_OnChanged;
-
-            // Start with 10 seconds left, then 120 seconds (or two minutes) between checks
-            RefreshTimer = new Timer(SetPriority, null, 10000, 120000);
+            // Start with 10 seconds left, then 60 seconds (or one minutes) between checks
+            RefreshTimer = new Timer(SetPriority, null, 10000, 60000);
         }
 
         [OnExit] 
@@ -38,52 +35,26 @@ namespace PrioritySetter
             RefreshTimer.Dispose();
         }
 
-        private void Config_OnChanged()
-        {
-            Logger.Info("Config changed! Updating process priority.");
-            SetPriority(null);
-        }
-
         private void SetPriority(object state)
         {
-            ProcessPriorityClass ppc;
-
-            switch (Config.ProcessPriority)
-            {
-                case Priority.Idle:
-                    ppc = ProcessPriorityClass.Idle;
-                    break;
-                case Priority.BelowNormal:
-                    ppc = ProcessPriorityClass.BelowNormal;
-                    break;
-                case Priority.Normal:
-                    ppc = ProcessPriorityClass.Normal;
-                    break;
-                case Priority.AboveNormal:
-                    ppc = ProcessPriorityClass.AboveNormal;
-                    break;
-                case Priority.High:
-                    ppc = ProcessPriorityClass.High;
-                    break;
-                case Priority.RealTime:
-                    ppc = ProcessPriorityClass.RealTime;
-                    break;
-                default:
-                    ppc = ProcessPriorityClass.Normal;
-                    break;
-            }
-
+            var thisProcess = Process.GetCurrentProcess();
 #if DEBUG
-            Logger.Notice($"Cheking priority. Set: {ThisProcess.PriorityClass}, Desired: {Config.ProcessPriority}, Desired converted: {ppc}");
+            Logger.Notice($"Cheking priority. Set: {thisProcess.PriorityClass}, Desired: {Config.ProcessPriority}");
 #endif
 
-            if (ThisProcess.PriorityClass == ppc) return;
+            if (thisProcess.PriorityClass == Config.ProcessPriority) return;
 
-            Logger.Info($"Priority no longer at desired level. Refreshing!");
+            Logger.Warn($"Priority no longer at desired level. Refreshing!");
 
-            ThisProcess.PriorityClass = ppc;
+            thisProcess.PriorityClass = Config.ProcessPriority;
 
-            Logger.Info($"Set priority to {ThisProcess.PriorityClass}");
+            Logger.Info($"Set priority to {thisProcess.PriorityClass}");
+        }
+
+        public class PrioritySetterConfig
+        {
+            [UseConverter(typeof(EnumConverter))]
+            public virtual ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.High;
         }
     }
 }

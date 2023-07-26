@@ -99,7 +99,6 @@
   <ItemGroup>
     <Compile Include="EnumConverter.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="PrioritySetterConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

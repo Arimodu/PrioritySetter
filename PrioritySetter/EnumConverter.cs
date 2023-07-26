@@ -2,36 +2,37 @@
 using IPA.Config.Stores;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PrioritySetter
 {
-    public class EnumConverter : ValueConverter<Priority>
+    public class EnumConverter : ValueConverter<ProcessPriorityClass>
     {
-        public override Priority FromValue(Value value, object parent)
+        public override ProcessPriorityClass FromValue(Value value, object parent)
         {
             switch (value.ToString().Trim('"'))
             {
                 case "Idle":
-                    return Priority.Idle;
+                    return ProcessPriorityClass.Idle;
                 case "BelowNormal":
-                    return Priority.BelowNormal;
+                    return ProcessPriorityClass.BelowNormal;
                 case "Normal":
-                    return Priority.Normal;
+                    return ProcessPriorityClass.Normal;
                 case "AboveNormal":
-                    return Priority.AboveNormal;
+                    return ProcessPriorityClass.AboveNormal;
                 case "High":
-                    return Priority.High;
+                    return ProcessPriorityClass.High;
                 case "RealTime":
-                    return Priority.RealTime;
+                    return ProcessPriorityClass.RealTime;
                 default:
                     throw new InvalidOperationException($"Invalid config: {value.GetType()} '{value}'");
             }
         }
 
-        public override Value ToValue(Priority obj, object parent)
+        public override Value ToValue(ProcessPriorityClass obj, object parent)
         {
             return Value.Text(obj.ToString());
         }
