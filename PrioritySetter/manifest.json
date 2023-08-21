@@ -3,7 +3,7 @@
   "id": "PrioritySetter-Light",
   "name": "PrioritySetter-Light",
   "author": "Arimodu",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "The PrioritySetter mod for Beat Saber allows you to automatically adjust the priority of the game process to optimize performance",
   "gameVersion": "1.29.1",
   "dependsOn": {

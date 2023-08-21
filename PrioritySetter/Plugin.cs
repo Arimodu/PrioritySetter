@@ -13,7 +13,11 @@ namespace PrioritySetter
         private readonly IPALogger Logger;
         private readonly Timer RefreshTimer;
 
-        private readonly ProcessPriorityClass Priority = ProcessPriorityClass.High;
+        internal readonly ProcessPriorityClass Priority = ProcessPriorityClass.High;
+
+#if DEBUG
+        private readonly DebugChecker DChecker;
+#endif
 
         [Init]
         public Plugin(IPALogger logger)
@@ -22,19 +26,31 @@ namespace PrioritySetter
 
             // Start with 10 seconds left, then 60 seconds (or one minute) between checks
             RefreshTimer = new Timer(SetPriority, null, 10000, 60000);
+
+            // Workaround for windows setting normal priority on window changing focus
+            Application.focusChanged += (isFocused) => { if (isFocused) SetPriority(null); };
+
+#if DEBUG
+            DChecker = new DebugChecker(1000, logger, this);
+#endif
         }
 
+#if DEBUG
+        [OnExit]
+        public void OnExit()
+        {
+            RefreshTimer.Dispose();
+            DChecker.Dispose();
+        }
+#else
         [OnExit] 
         public void OnExit() => RefreshTimer.Dispose();
+#endif
 
-        private void SetPriority(object state)
+        internal void SetPriority(object _)
         {
             // Process object does not update, have to refresh manually
             var thisProcess = Process.GetCurrentProcess();
-
-#if DEBUG
-            Logger.Notice($"Cheking priority. Set: {thisProcess.PriorityClass}, Desired: {Priority}");
-#endif
 
             if (thisProcess.PriorityClass == Priority) return;
 
