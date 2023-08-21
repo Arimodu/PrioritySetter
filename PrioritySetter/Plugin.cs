@@ -27,6 +27,9 @@ namespace PrioritySetter
 
             // Start with 10 seconds left, then 60 seconds (or one minutes) between checks
             RefreshTimer = new Timer(SetPriority, null, 10000, 60000);
+
+            // Workaround for windows setting normal priority on window changing focus
+            Application.focusChanged += (isFocused) => { if (isFocused) SetPriority(null); };
         }
 
         [OnExit] 
@@ -38,9 +41,6 @@ namespace PrioritySetter
         private void SetPriority(object state)
         {
             var thisProcess = Process.GetCurrentProcess();
-#if DEBUG
-            Logger.Notice($"Cheking priority. Set: {thisProcess.PriorityClass}, Desired: {Config.ProcessPriority}");
-#endif
 
             if (thisProcess.PriorityClass == Config.ProcessPriority) return;
 
